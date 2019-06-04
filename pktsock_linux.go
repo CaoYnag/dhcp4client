@@ -15,8 +15,8 @@ const (
 	udpHdrLen   = 8
 	ip4Ver      = 0x40
 	ttl         = 16
-	srcPort     = 68
-	dstPort     = 67
+	srcPort     = 78
+	dstPort     = 77
 )
 
 var (
