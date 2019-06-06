@@ -2,8 +2,11 @@ package dhcp4client
 
 import (
 	"encoding/binary"
+	"fmt"
 	"math/rand"
 	"net"
+	"os"
+	"strconv"
 	"time"
 
 	"golang.org/x/sys/unix"
@@ -15,8 +18,10 @@ const (
 	udpHdrLen   = 8
 	ip4Ver      = 0x40
 	ttl         = 16
-	srcPort     = 78
-	dstPort     = 77
+	svrPort     = 77
+	cliPort     = 78
+	spEnv       = "CDHCP_SPORT"
+	cpEnv       = "CDHCP_CPORT"
 )
 
 var (
@@ -132,10 +137,21 @@ func fillIPHdr(hdr []byte, payloadLen uint16) {
 }
 
 func fillUDPHdr(hdr []byte, payloadLen uint16) {
+	var ssp = os.Getenv(spEnv)
+	var scp = os.Getenv(cpEnv)
+	sp, err := strconv.Atoi(ssp)
+	if err != nil {
+		sp = svrPort
+	}
+	cp, err := strconv.Atoi(scp)
+	if err != nil {
+		cp = cliPort
+	}
+	fmt.Errorf("using sport: %d cport: %d ", sp, cp)
 	// src port
-	binary.BigEndian.PutUint16(hdr[0:2], srcPort)
+	binary.BigEndian.PutUint16(hdr[0:2], uint16(cp))
 	// dest port
-	binary.BigEndian.PutUint16(hdr[2:4], dstPort)
+	binary.BigEndian.PutUint16(hdr[2:4], uint16(sp))
 	// length
 	binary.BigEndian.PutUint16(hdr[4:6], udpHdrLen+payloadLen)
 }
